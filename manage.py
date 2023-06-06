@@ -3,10 +3,12 @@
 import os
 import sys
 
+from tenant.middlewares import set_db_for_router
+
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'multitenantdb.settings')
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "multitenant_db.settings")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -15,8 +17,15 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
-    execute_from_command_line(sys.argv)
+    from django.db import connection
+
+    args = sys.argv
+    db = args[1]
+    with connection.cursor() as cursor:
+        set_db_for_router(db)
+        del args[1]
+        execute_from_command_line(args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
