@@ -14,22 +14,24 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_PASSWORD: app_password1
       PGDATA: /tmp
+      PGPORT: 5432
 
   postgres2:
     image: postgres:14
     container_name: postgres2
     ports:
-      - "5433:5432"
+      - "5433:5433"
     volumes:
       - .data2:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: app_db2
       POSTGRES_USER: app_user2
-      POSTGRES_PORT: 5432
+      POSTGRES_PORT: 5433
       POSTGRES_PASSWORD: app_password2
-      PGDATA: /tmp
+      PGDATA: /tmp2
+      PGPORT: 5433
 
-  app:
+  app1:
     restart: always
     build: .
     env_file:
@@ -42,4 +44,30 @@ services:
       - "8000:8000"
     depends_on:
       - postgres1
+
+  app2:
+    restart: always
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - .:/backend
+    command: >
+      sh -c " python manage.py migrate --database=agrario && python manage.py runserver 0.0.0.0:9000 "
+    ports:
+      - "9000:9000"
+    depends_on:
       - postgres2
+
+  nginx:
+    restart: always
+    image: nginx:1.17
+    container_name: ngx_app
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./media:/usr/share/nginx/mediafiles:ro
+    depends_on:
+      - app1
+      - app2

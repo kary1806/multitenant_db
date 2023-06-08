@@ -2,7 +2,8 @@ from django.db import connection
 
 
 def hostname_from_the_request(request):
-    return request.get_host().split(":")[0].lower()
+    # return request.get_host().split(":")[0].lower()
+    return request.get_host()
 
 
 def tenant_db_from_the_request(request):
@@ -13,5 +14,6 @@ def tenant_db_from_the_request(request):
 
 def get_tenants_map():
     return {
-        "agrario.local": "agrario",
+        "localhost:9000": "agrario",
+        "localhost:8000": "default",
     }
